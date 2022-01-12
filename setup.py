@@ -1,7 +1,9 @@
+""" setup.py
+"""
 from setuptools import setup, find_packages
 from os import path
 
-from . import src
+import src
 
 # https://packaging.python.org/guides/making-a-pypi-friendly-readme/
 this_directory = path.abspath(path.dirname(__file__))
