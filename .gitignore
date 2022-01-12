@@ -129,4 +129,8 @@ dmypy.json
 .pyre/
 
 # .env values
-.devcontainer/devcontainer.env
+.devcontainer/devcontainer
+
+# files
+in
+out
