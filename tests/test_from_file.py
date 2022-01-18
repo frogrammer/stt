@@ -9,6 +9,7 @@ from src.video import extract_audio, add_subtitles
 
 TEST_VIDEO = 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4'
 SUBTITLES_PATH = './out/utterances.csv'
+SUBTITLES_JSON = './out/results.json'
 
 ROOT_DIR = Path(__file__).parent.parent
 IN_PATH = str(Path(ROOT_DIR, 'in', 'test.mp4'))
@@ -29,4 +30,4 @@ def test_from_file():
 def test_subtitles():
     """ generates subtitles from txt
     """
-    add_subtitles(SUBTITLES_PATH, IN_PATH, OUT_PATH)
+    add_subtitles(SUBTITLES_JSON, IN_PATH, OUT_PATH)

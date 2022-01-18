@@ -1,6 +1,7 @@
 azure-cognitiveservices-speech
 ffmpeg
 moviepy
+nltk
 pandas
 pytest
 requests

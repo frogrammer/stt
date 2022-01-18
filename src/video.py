@@ -1,12 +1,20 @@
 """helpers for video files
 """
-import moviepy.editor as mp
-from moviepy.video.tools.subtitles import SubtitlesClip, TextClip
-import pandas as pd
+from ctypes.wintypes import WORD
+import json
 import math
 from pathlib import Path
+import string
 
-SUBTITLE_BUFFER_S = 3
+import moviepy.editor as mp
+import nltk
+import pandas as pd
+from moviepy.video.tools.subtitles import SubtitlesClip, TextClip
+
+SUBTITLE_BUFFER_S = 0
+WORDS_PER_LINE = 8
+
+nltk.download('punkt')
 
 def extract_audio(in_path: str) -> str:
     """extract audio from video
@@ -22,26 +30,45 @@ def extract_audio(in_path: str) -> str:
     in_clip.audio.write_audiofile(out_path)
     return out_path
 
-def add_subtitles(subtitles_path: str, in_path: str, out_path: str):
-    subtitles_pd = pd.read_csv(subtitles_path)
+def _get_captions(row: dict):
+    cumulative_pos = 0
+    timings = []
+    captions = []
+    for s in row['Sentences']:
+        s = s.replace(',', ',\n')
+        num_words = s.count(' ') + 1
+        if num_words <= WORDS_PER_LINE:
+            captions.append(s)
+        else:
+            words = s.split(' ')
+            for i in range(0, len(words), WORDS_PER_LINE):
+                captions.append(' '.join(words[i:i + WORDS_PER_LINE]))
+
+    for c in captions:
+        num_words = c.count(' ') + 1
+        start =  row['Words'][cumulative_pos]['Offset']
+        end = row['Words'][cumulative_pos + num_words - 1]['Offset'] + \
+            row['Words'][cumulative_pos + num_words - 1]['Duration']
+        timings.append({
+            "Caption": c,
+            "Start": start / 10000000,
+            "End": (end  / 10000000) + SUBTITLE_BUFFER_S
+        })
+        cumulative_pos += num_words
+    return timings
+
+def add_subtitles(results_json: str, in_path: str, out_path: str):
+    stt_results = []
+    with open(results_json, 'r', encoding='UTF-8') as f_json:
+        stt_results = json.loads(f_json.read())
+    stt_pd = pd.DataFrame([r['NBest'][0] for r in stt_results])
+    stt_pd['Sentences'] = stt_pd['Display'].apply(nltk.sent_tokenize)
+    stt_pd['Captions'] = stt_pd.apply(_get_captions, axis=1)
+    timings_s = stt_pd.explode('Captions')['Captions'].dropna().drop_duplicates()
+    srt_s = timings_s.apply(lambda srt: ((srt['Start'], srt['End']), srt['Caption']))
     in_clip = mp.VideoFileClip(in_path)
-
-    subtitles_pd['start_s'] = subtitles_pd['Offset'].apply(lambda t: math.floor(t / 10000000))
-    subtitles_pd['end_s'] = subtitles_pd.apply(lambda row: math.floor((row['Offset'] + row['Duration']) / 10000000), axis=1)
-
-    subs_generator = lambda txt: TextClip(txt, font='Arial', fontsize=18, color='white', bg_color='black')
-    subs_text = []
-
-    # there's probably a better way to do this using window fns.
-    for time in range(0, math.floor(in_clip.duration)):
-        sub_sub = subtitles_pd.query(f'start_s >= {time} and end_s <= {time + SUBTITLE_BUFFER_S}')
-        if len(sub_sub) > 0:
-            sub_text = sub_sub['Text'].str.cat(sep=' ')
-            subs_text.append(((time, time + SUBTITLE_BUFFER_S), sub_text))
-
-    subtitles = SubtitlesClip(subs_text, subs_generator)
-    result = mp.CompositeVideoClip([in_clip, subtitles.set_pos(('center','bottom'))])
-
+    subs_generator = lambda txt: TextClip(txt, font='Arial', fontsize=12, color='white', bg_color='black')
+    subtitles = SubtitlesClip(srt_s.to_numpy().tolist(), subs_generator)
+    result = mp.CompositeVideoClip([in_clip, subtitles.set_position(('center','bottom'))])
     file_ext = in_path.split('.')[-1]
-
     result.write_videofile(str(Path(out_path, f'out.{file_ext}')), fps=in_clip.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="libx264", audio_codec="aac")
