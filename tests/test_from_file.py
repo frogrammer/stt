@@ -2,11 +2,14 @@
 """
 from pathlib import Path
 
+import pandas as pd
 import requests
 from src.stt import from_file
-from src.video import extract_audio
+from src.video import extract_audio, add_subtitles
 
 TEST_VIDEO = 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4'
+SUBTITLES_PATH = './out/utterances.csv'
+
 ROOT_DIR = Path(__file__).parent.parent
 IN_PATH = str(Path(ROOT_DIR, 'in', 'test.mp4'))
 OUT_PATH = str(Path(ROOT_DIR, 'out'))
@@ -22,3 +25,8 @@ def test_from_file():
     audio_path = extract_audio(IN_PATH)
 
     from_file(audio_path, OUT_PATH)
+
+def test_subtitles():
+    """ generates subtitles from txt
+    """
+    add_subtitles(SUBTITLES_PATH, IN_PATH, OUT_PATH)

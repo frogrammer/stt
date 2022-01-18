@@ -1,6 +1,7 @@
 azure-cognitiveservices-speech
 ffmpeg
 moviepy
+pandas
 pytest
 requests
 setuptools
