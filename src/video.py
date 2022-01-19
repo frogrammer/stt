@@ -13,6 +13,7 @@ from moviepy.video.tools.subtitles import SubtitlesClip, TextClip
 
 SUBTITLE_BUFFER_S = 0
 WORDS_PER_LINE = 8
+SPEAKER_COLOUR = ['white', 'yellow', 'purple', 'orange', 'pink', 'red', 'green', 'blue']
 
 nltk.download('punkt')
 
