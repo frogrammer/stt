@@ -1,15 +1,10 @@
 {
-	"name": "Python 3",
+	"name": "RHEL Python 3.9",
 	"build": {
 		"dockerfile": "Dockerfile",
 		"context": "..",
 		"args": { 
-			// Update 'VARIANT' to pick a Python version: 3, 3.10, 3.9, 3.8, 3.7, 3.6
-			// Append -bullseye or -buster to pin to an OS version.
-			// Use -bullseye variants on local on arm64/Apple Silicon.
-			"VARIANT": "3.9-bullseye",
-			// Options
-			"NODE_VERSION": "lts/*"
+
 		}
 	},
 
@@ -26,7 +21,11 @@
 		"python.linting.mypyPath": "/usr/local/py-utils/bin/mypy",
 		"python.linting.pycodestylePath": "/usr/local/py-utils/bin/pycodestyle",
 		"python.linting.pydocstylePath": "/usr/local/py-utils/bin/pydocstyle",
-		"python.linting.pylintPath": "/usr/local/py-utils/bin/pylint"
+		"python.linting.pylintPath": "/usr/local/py-utils/bin/pylint",
+		"settings": {
+			"terminal.integrated.shell.linux": "/bin/bash",
+			"terminal.integrated.cwd": "/home/vscode",
+			},
 	},
 
 	// Add the IDs of extensions you want installed when the container is created.
@@ -44,5 +43,5 @@
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode",
-	"runArgs": ["--env-file", ".devcontainer/devcontainer.env"]
+	"runArgs": ["--env-file", ".devcontainer/devcontainer.env"],
 }
