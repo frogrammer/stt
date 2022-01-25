@@ -14,5 +14,7 @@
     ],
     "python.testing.pytestArgs": [
         "tests"
-    ]
+    ],
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }
