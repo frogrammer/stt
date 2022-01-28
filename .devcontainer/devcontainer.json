@@ -33,14 +33,15 @@
 	"extensions": [
 		"ms-python.python",
 		"ms-python.vscode-pylance",
-		"njpwerner.autodocstring"
+		"njpwerner.autodocstring",
+		"coolbear.systemd-unit-file"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "source /home/vscode/.venv/bin/activate && pip install -r requirements.txt",
+	"postCreateCommand": "pip install --upgrade pip && pip install -r requirements.txt",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode",

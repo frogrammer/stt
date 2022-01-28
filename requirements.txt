@@ -1,5 +1,6 @@
 azure-cognitiveservices-speech
 boto3
+diskcache
 ffmpeg
 moviepy
 nltk
