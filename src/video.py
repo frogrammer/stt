@@ -17,7 +17,7 @@ SPEAKER_COLOUR = ['white', 'yellow', 'purple', 'orange', 'pink', 'red', 'green',
 
 nltk.download('punkt')
 
-def extract_audio(in_path: str) -> str:
+def extract_audio(in_video_path: str, out_audio_path:str):
     """extract audio from video
 
     Args:
@@ -26,10 +26,8 @@ def extract_audio(in_path: str) -> str:
     Returns:
         str: path to audio
     """
-    in_clip = mp.VideoFileClip(in_path)
-    out_path = f'{".".join(in_path.split(".")[:-1])}.wav'
-    in_clip.audio.write_audiofile(out_path)
-    return out_path
+    in_clip = mp.VideoFileClip(in_video_path)
+    in_clip.audio.write_audiofile(out_audio_path)
 
 def _get_captions(row: dict):
     cumulative_pos = 0
@@ -58,18 +56,17 @@ def _get_captions(row: dict):
         cumulative_pos += num_words
     return timings
 
-def add_subtitles(results_json: str, in_path: str, out_path: str):
+def add_captions(stt_path: str, in_video_path: str, out_video_path: str):
     stt_results = []
-    with open(results_json, 'r', encoding='UTF-8') as f_json:
+    with open(stt_path, 'r', encoding='UTF-8') as f_json:
         stt_results = json.loads(f_json.read())
     stt_pd = pd.DataFrame([r['NBest'][0] for r in stt_results])
     stt_pd['Sentences'] = stt_pd['Display'].apply(nltk.sent_tokenize)
     stt_pd['Captions'] = stt_pd.apply(_get_captions, axis=1)
     timings_s = stt_pd.explode('Captions')['Captions'].dropna().drop_duplicates()
     srt_s = timings_s.apply(lambda srt: ((srt['Start'], srt['End']), srt['Caption']))
-    in_clip = mp.VideoFileClip(in_path)
+    in_clip = mp.VideoFileClip(in_video_path)
     subs_generator = lambda txt: TextClip(txt, font='Arial', fontsize=12, color='white', bg_color='black')
     subtitles = SubtitlesClip(srt_s.to_numpy().tolist(), subs_generator)
     result = mp.CompositeVideoClip([in_clip, subtitles.set_position(('center','bottom'))])
-    file_ext = in_path.split('.')[-1]
-    result.write_videofile(str(Path(out_path, f'out.{file_ext}')), fps=in_clip.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="libx264", audio_codec="aac")
+    result.write_videofile(out_video_path, fps=in_clip.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="libx264", audio_codec="aac")

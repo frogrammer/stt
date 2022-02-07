@@ -11,16 +11,17 @@ import pandas as pd
 HOST = os.getenv('HOST')
 ENDPOINT = os.getenv('ENDPOINT')
 ENABLE_DIARIZATION = False
-ENABLE_LOGGING = True
+ENABLE_LOGGING = False
+ENABLE_UTTERANCES = False
 
-def from_file(in_path: str, out_path: str):
+def process_audio(audio_path: str, stt_path: str, utterances_path: str = '', log_path: str = ''):
     """ take audio from in_path and generate assets in out_path
     """
     speech_config = speechsdk.SpeechConfig(host=HOST, endpoint=ENDPOINT)
     speech_config.request_word_level_timestamps()
-    if(ENABLE_LOGGING):
+    if(ENABLE_LOGGING and log_path):
         speech_config.enable_audio_logging()
-        speech_config.set_property(speechsdk.PropertyId.Speech_LogFilename, str(Path(out_path, 'out.log')))
+        speech_config.set_property(speechsdk.PropertyId.Speech_LogFilename, log_path)
     if(ENABLE_DIARIZATION):
         speech_config.set_service_property(
             name='speechcontext-PhraseOutput.Format',
@@ -34,7 +35,7 @@ def from_file(in_path: str, out_path: str):
             channel=speechsdk.ServicePropertyChannel.UriQueryParameter
     )
 
-    audio_input = speechsdk.AudioConfig(filename=str(in_path))
+    audio_input = speechsdk.AudioConfig(filename=str(audio_path))
     speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
 
     done = False
@@ -52,7 +53,8 @@ def from_file(in_path: str, out_path: str):
     utterance_evts = []
     result_evts = []
 
-    speech_recognizer.recognizing.connect(utterance_evts.append)
+    if ENABLE_UTTERANCES:
+        speech_recognizer.recognizing.connect(utterance_evts.append)
     speech_recognizer.recognized.connect(result_evts.append)
     speech_recognizer.session_stopped.connect(stop_cb)
     speech_recognizer.canceled.connect(stop_cb)
@@ -61,8 +63,11 @@ def from_file(in_path: str, out_path: str):
     while not done:
         time.sleep(.5)
 
-    utterances_pd = pd.DataFrame([json.loads(u.result.json) for u in utterance_evts])
-    utterances_pd.to_csv(Path(out_path, 'utterances.csv'))
+    if ENABLE_UTTERANCES:
+        utterances_pd = pd.DataFrame([json.loads(u.result.json) for u in utterance_evts])
+        utterances_pd.to_csv(utterances_path)
 
-    with open(Path(out_path, 'results.json'), 'w', encoding='UTF-8') as f_res:
+    with open(stt_path, 'w', encoding='UTF-8') as f_res:
         f_res.write(json.dumps([json.loads(res.result.json) for res in result_evts]))
+
+    

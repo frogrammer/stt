@@ -133,4 +133,6 @@ dmypy.json
 
 # files
 in
+proc
 out
+test.zip
