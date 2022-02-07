@@ -47,20 +47,20 @@ def create_task(video_path: str) -> str:
     shutil.move(video_path, task_path)
     return task_id
 
-def query(task_id: str) -> list[str]:
+def query(task_id: str) -> list:
     return os.listdir(get_task_path(task_id))
 
 def status(task_id: str) -> Status:
     task_path = get_task_path(task_id)
-    has_archive = any(['.zip' in f for f in os.listdir(task_path)])
+    has_archive = any([f'{task_id}.zip' in f for f in os.listdir(OUT_DIR)])
     has_proc_folder = os.path.exists(task_path)
-    has_stt = any(['.json' in f for f in os.listdir(task_path)])
-    has_audio = any(['.wav' in f for f in os.listdir(task_path)])
-    has_captioned_video = any(['.mp4' in f and task_id in f for f in os.listdir(task_path)])
 
     if has_archive:
         return Status.ARCHIVED if has_proc_folder else Status.COMPLETED
     elif has_proc_folder:
+        has_stt = any(['.json' in f for f in os.listdir(task_path)])
+        has_audio = any(['.wav' in f for f in os.listdir(task_path)])
+        has_captioned_video = any(['.mp4' in f and task_id in f for f in os.listdir(task_path)])
         return Status.CAPTIONS_PROCESSED if has_captioned_video and has_stt \
             else Status.STT_PROCESSED if has_stt \
             else Status.AUDIO_PROCESSED if has_audio \
@@ -80,15 +80,17 @@ def delete(task_id: str):
         shutil.rmtree(get_task_path(task_id), True)
 
 def archive(task_id: str) -> str:
+    task_path = get_task_path(task_id)
     for to_delete in [f for f in query(task_id) if f[-4:] in DO_NOT_ARCHIVE]:
-        os.remove(to_delete)
-    return shutil.make_archive(Path(OUT_DIR, task_id), 'zip', get_task_path(task_id))
+        os.remove(Path(task_path, to_delete))
+    return shutil.make_archive(Path(OUT_DIR, task_id), 'zip', task_path)
 
 def process_step(task_id: str):
     task_status = status(task_id)
     task_path = get_task_path(task_id)
     task_files = query(task_id)
-    in_video_path = str(Path(task_path, next(iter([f for f in task_files if '.mp4' in f and task_id not in f]), None)))
+    in_video_file = next(iter([f for f in task_files if '.mp4' in f and task_id not in f]), None)
+    in_video_path = None if not in_video_file else str(Path(task_path, in_video_file))
     out_video_path = str(Path(task_path, f'{task_id}.mp4'))
     audio_path = str(Path(task_path, f'{task_id}.wav'))
     stt_path = str(Path(task_path, f'{task_id}.json'))

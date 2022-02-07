@@ -3,8 +3,16 @@ version: "3"
 services:
   app:
     build:
-      context: /stt
+      context: . 
       dockerfile: Dockerfile
     command:
-      - python 
-      - /stt/src/run.py
+      - /bin/sh
+      - -c
+      - "while sleep 1000; do :; done"
+    env_file:
+      - stt.env
+    networks:
+      - bridged
+networks:
+  bridged:
+    driver: bridge
