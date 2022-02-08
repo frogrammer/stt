@@ -1,0 +1,1 @@
+Run from folder that contains Dockerfile + docker-compose.yml

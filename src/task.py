@@ -13,7 +13,8 @@ ROOT_DIR = Path(__file__).parent.parent
 IN_DIR = str(Path(ROOT_DIR, 'in'))
 PROC_DIR = str(Path(ROOT_DIR, 'proc'))
 OUT_DIR = str(Path(ROOT_DIR, 'out'))
-DO_NOT_ARCHIVE = ['.wav']
+DO_NOT_ARCHIVE = ['.wav', '.m4a']
+PRINT_STDOUT = True
 
 class Status(Enum):
     STARTED = 1 # task created, nothing done yet
