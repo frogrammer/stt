@@ -1,10 +1,7 @@
 """helpers for video files
 """
-from ctypes.wintypes import WORD
 import json
-import math
 from pathlib import Path
-import string
 
 import moviepy.editor as mp
 import nltk
@@ -69,4 +66,4 @@ def add_captions(stt_path: str, in_video_path: str, out_video_path: str):
     subs_generator = lambda txt: TextClip(txt, font='Arial', fontsize=12, color='white', bg_color='black')
     subtitles = SubtitlesClip(srt_s.to_numpy().tolist(), subs_generator)
     result = mp.CompositeVideoClip([in_clip, subtitles.set_position(('center','bottom'))])
-    result.write_videofile(out_video_path, fps=in_clip.fps, temp_audiofile="temp-audio.m4a", remove_temp=True, codec="libx264", audio_codec="aac")
+    result.write_videofile(out_video_path, fps=in_clip.fps, temp_audiofile=f"{out_video_path}.temp-audio.m4a", remove_temp=True, codec="libx264", audio_codec="aac")

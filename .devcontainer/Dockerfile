@@ -12,4 +12,6 @@ RUN groupadd --gid 1002 vscode \
 USER 1002
 ENV HOME /home/vscode
 RUN python -m venv /home/vscode/.venv \
-    && echo 'source /home/vscode/.venv/bin/activate' >> /home/vscode/.bashrc
+    && echo 'source /home/vscode/.venv/bin/activate' >> /home/vscode/.bashrc \
+    && echo 'alias python="/home/vscode/.venv/bin/python3.9' >> /home/vscode/.bashrc \
+    && echo 'alias pip="/home/vscode/.venv/bin/pip3.9' >> /home/vscode/.bashrc

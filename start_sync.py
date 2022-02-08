@@ -9,7 +9,7 @@ def main():
     while True:
         for f in os.listdir(src.task.IN_DIR):
             abs_path = Path(src.task.IN_DIR, f)
-            task_id = src.task.create_task(abs_path)
+            src.task.create_task(abs_path)
         for task_id in src.task.get_tasks():
             src.task.process_sync(task_id)
         sleep(15)

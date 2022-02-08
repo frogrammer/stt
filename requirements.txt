@@ -1,7 +1,6 @@
 azure-cognitiveservices-speech
-boto3
-diskcache
 ffmpeg
+gunicorn
 moviepy
 nltk
 pandas

@@ -13,8 +13,8 @@ RUN wget http://www.itzgeek.com/msttcore-fonts-2.0-3.noarch.rpm && rpm -Uvh mstt
     && chmod +x /stt/process.py \
     && chmod +x /stt/init.py \
     && pip install -r requirements.txt \
-    && python /stt/init.py \
-    && chown -R 1001:1001 /stt/in \
+    && python /stt/init.py
+RUN chown -R 1001:1001 /stt/in \
     && chown -R 1001:1001 /stt/proc \
-    && chown -R 1001:1001 /stt/out \
+    && chown -R 1001:1001 /stt/out
 USER 1001

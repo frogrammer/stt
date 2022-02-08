@@ -1,11 +1,9 @@
 from enum import Enum
-import io
 import shutil
 from pathlib import Path
 import os
 import typing
 import uuid
-import zipfile
 
 import src.stt
 import src.video
