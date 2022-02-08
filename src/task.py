@@ -114,3 +114,6 @@ def process_sync(task_id: str):
     while task_status is not (Status.COMPLETED or Status.ERROR):
         process_step(task_id)
         task_status = status(task_id)
+
+def get_tasks() -> list:
+    return [d for d in os.listdir(src.task.PROC_DIR) if Path(src.task.PROC_DIR, d).is_dir()]
