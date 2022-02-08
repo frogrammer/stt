@@ -18,13 +18,13 @@ OUT_DIR = str(Path(ROOT_DIR, 'out'))
 DO_NOT_ARCHIVE = ['.wav']
 
 class Status(Enum):
-    STARTED = 1
-    AUDIO_PROCESSED = 2
-    STT_PROCESSED = 3
-    CAPTIONS_PROCESSED = 4
-    ARCHIVED = 5
-    COMPLETED = 6
-    ERROR = 7
+    STARTED = 1 # task created, nothing done yet
+    AUDIO_PROCESSED = 2 # audio extracted from video
+    STT_PROCESSED = 3 # text extracted from audio
+    CAPTIONS_PROCESSED = 4 # captions added to video
+    ARCHIVED = 5 # zip archive created in outbox
+    COMPLETED = 6 # outside of zip, all task assets deleted
+    ERROR = 7 # oops
 
 def create_folders():
     for path in [p for p in [IN_DIR, PROC_DIR, OUT_DIR] if not os.path.exists(p)]:
