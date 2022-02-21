@@ -13,7 +13,7 @@
         "C0301"
     ],
     "python.testing.pytestArgs": [
-        "tests"
+        "app"
     ],
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true
