@@ -1,0 +1,9 @@
+azure-cognitiveservices-speech
+ffmpeg
+gunicorn
+moviepy
+nltk
+pandas
+pytest
+requests
+setuptools

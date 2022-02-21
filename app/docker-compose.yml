@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  app:
+    build:
+      context: . 
+      dockerfile: Dockerfile_local
+    command:
+      - /bin/sh
+      - -c
+      - "while sleep 1000; do :; done"
+    env_file:
+      - stt.env
+    networks:
+      - bridged
+networks:
+  bridged:
+    driver: bridge
