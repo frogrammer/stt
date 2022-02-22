@@ -15,4 +15,5 @@ services:
       - bridged
 networks:
   bridged:
-    driver: bridge
+    external: true
+    name: bridge

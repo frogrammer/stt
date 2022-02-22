@@ -13,9 +13,10 @@ RUN update-ca-trust \
     && python -m venv ~/.venv \
     && echo 'source ~/.venv/bin/activate' >> ~/.bashrc \
     && chmod +x /stt/process.py \
-    && chmod +x /stt/init.py \
     && pip install -r requirements.txt \
-    && python /stt/init.py \
+    && mkdir -p /stt/in \
+    && mkdir -p /stt/proc \
+    && mkdir -p /stt/out \
     && chown -R 1001:1001 /stt/in \
     && chown -R 1001:1001 /stt/proc \
     && chown -R 1001:1001 /stt/out \

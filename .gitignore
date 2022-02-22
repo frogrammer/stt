@@ -140,3 +140,5 @@ app/proc
 app/out
 test.zip
 build.py
+docker-build
+app/assets/data/*
