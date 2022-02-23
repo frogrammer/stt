@@ -41,7 +41,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip install --upgrade pip && pip install -r ./app/requirements.txt",
+	"postCreateCommand": "pip install --upgrade pip && pip install -r ./app/src/requirements.txt && python ./app/src/nltk_downloads.py",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode",

@@ -16,4 +16,5 @@ RUN python -m venv ~/.venv \
     && mkdir -p /stt/in \
     && mkdir -p /stt/proc \
     && mkdir -p /stt/out \
+    && python3 nltk_downloads.py \
     && fc-cache /usr/local/share/fonts/
