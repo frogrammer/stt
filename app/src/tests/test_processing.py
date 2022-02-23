@@ -4,11 +4,12 @@ from pathlib import Path
 import shutil
 import task, process
 
-TEST_VIDEO = Path(Path(__file__).parent.parent.parent, 'assets', 'data', 'test.mp4')
+TEST_VIDEO_DIR = Path(Path(__file__).parent.parent.parent, 'assets', 'data')
 
 def test_copydata():
     task.create_folders()
-    shutil.copy(TEST_VIDEO, task.IN_DIR)
+    for file in TEST_VIDEO_DIR.iterdir():
+        shutil.copy(file, task.IN_DIR)
 
 def test_process():
     process.main()
