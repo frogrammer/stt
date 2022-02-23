@@ -2,15 +2,14 @@
 """
 from pathlib import Path
 import shutil
-import task
+import task, app.src.process as process
 
-TEST_VIDEO = Path(Path(__file__).parent.parent.parent.parent, 'assets', 'test.mp4')
+TEST_VIDEO = Path(Path(__file__).parent.parent.parent, 'assets', 'data', 'test.mp4')
 
 def test_process():
     task.create_folders()
     shutil.copy(TEST_VIDEO, task.IN_DIR)
-    task_id = task.create_task(str(Path(task.IN_DIR, TEST_VIDEO.name)))
-    task.process_sync(task_id)
+    process.main()
 
 def test_clear():
     task.clear_folders()

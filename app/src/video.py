@@ -9,11 +9,13 @@ import nltk
 import pandas as pd
 from moviepy.video.tools.subtitles import SubtitlesClip, TextClip
 
+import config
+
 SUBTITLE_BUFFER_S = 0
 WORDS_PER_LINE = 8
 SPEAKER_COLOUR = ['white', 'yellow', 'purple', 'orange', 'pink', 'red', 'green', 'blue']
-FONT = os.environ['FONT']
-FONT_SIZE = int(os.environ['FONT_SIZE'])
+FONT = config.CONFIG['FONT']
+FONT_SIZE = config.CONFIG['FONT_SIZE']
 
 nltk.download('punkt')
 
@@ -56,17 +58,24 @@ def _get_captions(row: dict):
         cumulative_pos += num_words
     return timings
 
-def add_captions(stt_path: str, in_video_path: str, out_video_path: str):
+def add_captions(stt_path: str, in_video_path: str, out_video_path: str, out_srt_path: str = ''):
     stt_results = []
+    # read STT json
     with open(stt_path, 'r', encoding='UTF-8') as f_json:
         stt_results = json.loads(f_json.read())
+
+    # restructure with pandas to [(start, end), caption]
     stt_pd = pd.DataFrame([r['NBest'][0] for r in stt_results])
     stt_pd['Sentences'] = stt_pd['Display'].apply(nltk.sent_tokenize)
     stt_pd['Captions'] = stt_pd.apply(_get_captions, axis=1)
     timings_s = stt_pd.explode('Captions')['Captions'].dropna().drop_duplicates()
     srt_s = timings_s.apply(lambda srt: ((srt['Start'], srt['End']), srt['Caption']))
+
+    # write to video
     in_clip = mp.VideoFileClip(in_video_path)
     subs_generator = lambda txt: TextClip(txt, font=FONT, fontsize=FONT_SIZE, color='white', bg_color='black')
     subtitles = SubtitlesClip(srt_s.to_numpy().tolist(), subs_generator)
+    if out_srt_path:
+        subtitles.write_srt(out_srt_path)
     result = mp.CompositeVideoClip([in_clip, subtitles.set_position(('center','bottom'))])
     result.write_videofile(out_video_path, fps=in_clip.fps, temp_audiofile='/tmp/temp-audio.m4a', remove_temp=True, codec='libx264', audio_codec='aac')

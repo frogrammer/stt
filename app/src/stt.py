@@ -4,15 +4,27 @@ import os
 import time
 from pathlib import Path
 import json
+import requests
+from requests.structures import CaseInsensitiveDict
 
 import azure.cognitiveservices.speech as speechsdk
 import pandas as pd
 
-HOST = os.getenv('HOST')
-ENDPOINT = os.getenv('ENDPOINT')
+import config, display
+
+HOST = config.CONFIG['HOST']
+ENDPOINT = config.CONFIG['ENDPOINT']
+KEEP_ALIVE = config.CONFIG['KEEP_ALIVE']
 ENABLE_DIARIZATION = False
 ENABLE_LOGGING = False
-ENABLE_UTTERANCES = False
+ENABLE_STDOUT = config.CONFIG['VERBOSE_STT']
+
+def stt_keep_alive() -> bool:
+    headers = CaseInsensitiveDict()
+    headers["Connection"] = "keep-alive"
+    headers["Keep-Alive"] = "timeout=5, max=100"
+    res = requests.get(KEEP_ALIVE, headers=headers)
+    return res.ok
 
 def process_audio(audio_path: str, stt_path: str, utterances_path: str = '', log_path: str = ''):
     """ take audio from in_path and generate assets in out_path
@@ -49,12 +61,15 @@ def process_audio(audio_path: str, stt_path: str, utterances_path: str = '', log
         nonlocal done_evt
         done = True
         done_evt = evt
+    
+    def display_cb(evt):
+        display.write_stdout_sameline(f'{"{:<20}".format(evt.offset)}{"{:<40}".format(evt.result.text)}')
 
-    utterance_evts = []
     result_evts = []
 
-    if ENABLE_UTTERANCES:
-        speech_recognizer.recognizing.connect(utterance_evts.append)
+    if ENABLE_STDOUT:
+        speech_recognizer.recognizing.connect(display_cb)
+    
     speech_recognizer.recognized.connect(result_evts.append)
     speech_recognizer.session_stopped.connect(stop_cb)
     speech_recognizer.canceled.connect(stop_cb)
@@ -62,10 +77,6 @@ def process_audio(audio_path: str, stt_path: str, utterances_path: str = '', log
 
     while not done:
         time.sleep(.5)
-
-    if ENABLE_UTTERANCES:
-        utterances_pd = pd.DataFrame([json.loads(u.result.json) for u in utterance_evts])
-        utterances_pd.to_csv(utterances_path)
 
     with open(stt_path, 'w', encoding='UTF-8') as f_res:
         f_res.write(json.dumps([json.loads(res.result.json) for res in result_evts]))
