@@ -26,7 +26,7 @@ def stt_keep_alive() -> bool:
     res = requests.get(KEEP_ALIVE, headers=headers)
     return res.ok
 
-def process_audio(audio_path: str, stt_path: str, utterances_path: str = '', log_path: str = ''):
+def process_audio(audio_path: str, stt_path: str, log_path: str = ''):
     """ take audio from in_path and generate assets in out_path
     """
     speech_config = speechsdk.SpeechConfig(host=HOST, endpoint=ENDPOINT)

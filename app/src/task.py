@@ -5,7 +5,7 @@ import os
 import typing
 import uuid
 
-import display, stt, video
+import captions, display, stt, video
 
 ENCODING = 'latin-1'
 ROOT_DIR = Path(__file__).parent
@@ -16,20 +16,25 @@ DO_NOT_ARCHIVE = ['.wav', '.m4a']
 PRINT_STDOUT = True
 
 class Status(Enum):
-    STARTED = 1 # task created, nothing done yet
-    AUDIO_PROCESSED = 2 # audio extracted from video
-    STT_PROCESSED = 3 # text extracted from audio
-    CAPTIONS_PROCESSED = 4 # captions added to video
-    ARCHIVED = 5 # zip archive created in outbox
-    COMPLETED = 6 # outside of zip, all task assets deleted
-    ERROR = 7 # oops
+    STARTED = 1
+    AUDIO_PROCESSED = 2
+    STT_PROCESSED = 3
+    CAPTIONS_PROCESSED = 4
+    VIDEO_CAPTIONED = 5
+    ARCHIVED = 6
+    COMPLETED = 7
+    ERROR = 8
 
 class Actions(Enum):
-    EXTRACT_AUDIO = 1 # task created, nothing done yet
-    PROCESS_STT = 2 # audio extracted from video
-    PROCESS_CAPTIONS = 3 # text extracted from audio
-    CREATE_ARCHIVE = 4 # captions added to video
-    TERMINATE = 5 # zip archive created in outbox
+    EXTRACT_AUDIO = 1
+    PROCESS_STT = 2
+    PROCESS_CAPTIONS = 3
+    CAPTION_VIDEO = 4
+    CREATE_ARCHIVE = 5
+    CLEAR_TEMPORARY_FILES = 6
+    TERMINATE_SUCCESS = 7
+    TERMINATE_ERROR = 8
+
 
 def create_folders():
     for path in [p for p in [IN_DIR, PROC_DIR, OUT_DIR] if not os.path.exists(p)]:
@@ -65,8 +70,10 @@ def status(task_id: str) -> Status:
     elif has_proc_folder:
         has_stt = any(['.json' in f for f in os.listdir(task_path)])
         has_audio = any(['.wav' in f for f in os.listdir(task_path)])
+        has_srt = any(['.csv' in f for f in os.listdir(task_path)])
         has_captioned_video = any(['.mp4' in f and task_id in f for f in os.listdir(task_path)])
-        return Status.CAPTIONS_PROCESSED if has_captioned_video and has_stt \
+        return Status.VIDEO_CAPTIONED if has_captioned_video and has_srt \
+            else Status.CAPTIONS_PROCESSED if has_srt \
             else Status.STT_PROCESSED if has_stt \
             else Status.AUDIO_PROCESSED if has_audio \
             else Status.STARTED
@@ -102,25 +109,29 @@ def process_step(task_id: str):
     in_video_file = next(iter([f for f in task_files if '.mp4' in f and task_id not in f]), None)
     in_video_path = None if not in_video_file else str(Path(task_path, in_video_file))
     out_video_path = str(Path(task_path, f'{task_id}.mp4'))
-    out_srt_path = str(Path(task_path, f'{task_id}.srt'))
+    out_srt_path = str(Path(task_path, f'{task_id}.csv'))
     audio_path = str(Path(task_path, f'{task_id}.wav'))
     stt_path = str(Path(task_path, f'{task_id}.json'))
     log_path = str(Path(task_path, f'{task_id}.log'))
-    utterances_path = str(Path(task_path, f'{task_id}.csv'))
     print_status(task_id)
     if task_status is Status.STARTED:
         video.extract_audio(in_video_path, audio_path)
     if task_status is Status.AUDIO_PROCESSED:
         if stt.stt_keep_alive():
-            stt.process_audio(audio_path, stt_path, utterances_path, log_path)
+            stt.process_audio(audio_path, stt_path, log_path)
         else: 
             err = 'Could not connect to cogntive service: {stt.KEEP_ALIVE}, {stt.HOST}'
             display.write_stderr(err)
             raise err
     if task_status is Status.STT_PROCESSED:
-        os.remove(audio_path)
-        video.add_captions(stt_path, in_video_path, out_video_path, out_srt_path)
+        try:
+            os.remove(audio_path)
+        except:
+            pass
+        captions.write_srt(stt_path, out_srt_path)
     if task_status is Status.CAPTIONS_PROCESSED:
+        video.add_captions(out_srt_path, in_video_path, out_video_path)
+    if task_status is Status.VIDEO_CAPTIONED:
         os.remove(in_video_path)
         archive(task_id)
     if task_status is Status.ARCHIVED:
