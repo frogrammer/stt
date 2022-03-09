@@ -48,17 +48,23 @@ def clear_folders():
 def get_task_path(task_id: str) -> Path:
     return Path(PROC_DIR, task_id)
 
-def create_task(video_path: str) -> str:
-    create_folders()
-    task_id = str(uuid.uuid4())
-    task_path = get_task_path(task_id)
-    if not os.path.exists(task_path):
-        os.mkdir(task_path)
-    shutil.move(video_path, task_path)
-    return task_id
-
 def query(task_id: str) -> list:
     return os.listdir(get_task_path(task_id))
+
+def create_task(path: str) -> str:
+    create_folders()
+    if Path(path).is_file():
+        task_id = str(uuid.uuid4())
+        task_path = get_task_path(task_id)
+        if not os.path.exists(task_path):
+            os.mkdir(task_path)
+        if '.zip' in path:
+            shutil.unpack_archive(path, task_path)
+        else:
+            shutil.move(path, task_path)
+    if Path(path).is_dir():
+        shutil.move(path, task_path)
+    return task_id
 
 def status(task_id: str) -> Status:
     task_path = get_task_path(task_id)
@@ -106,12 +112,16 @@ def process_step(task_id: str):
     task_status = status(task_id)
     task_path = get_task_path(task_id)
     task_files = query(task_id)
+    # if someone has input audio, stt or srt with the video, use the provided. Else generate something new.
     in_video_file = next(iter([f for f in task_files if '.mp4' in f and task_id not in f]), None)
+    in_srt = next(iter([f for f in task_files if '.csv' in f and task_id not in f]), None)
+    in_stt = next(iter([f for f in task_files if '.json' in f and task_id not in f]), None)
+    in_audio = next(iter([f for f in task_files if '.wav' in f and task_id not in f]), None)
     in_video_path = None if not in_video_file else str(Path(task_path, in_video_file))
     out_video_path = str(Path(task_path, f'{task_id}.mp4'))
-    out_srt_path = str(Path(task_path, f'{task_id}.csv'))
-    audio_path = str(Path(task_path, f'{task_id}.wav'))
-    stt_path = str(Path(task_path, f'{task_id}.json'))
+    srt_path = str(Path(task_path, in_srt if in_srt else f'{task_id}.csv'))
+    audio_path = str(Path(task_path, in_audio if in_audio else f'{task_id}.wav'))
+    stt_path = str(Path(task_path, in_stt if in_stt else f'{task_id}.json'))
     log_path = str(Path(task_path, f'{task_id}.log'))
     print_status(task_id)
     if task_status is Status.STARTED:
@@ -128,9 +138,9 @@ def process_step(task_id: str):
             os.remove(audio_path)
         except:
             pass
-        captions.write_srt(stt_path, out_srt_path)
+        captions.write_srt(stt_path, srt_path)
     if task_status is Status.CAPTIONS_PROCESSED:
-        video.add_captions(out_srt_path, in_video_path, out_video_path)
+        video.add_captions(srt_path, in_video_path, out_video_path)
     if task_status is Status.VIDEO_CAPTIONED:
         os.remove(in_video_path)
         archive(task_id)

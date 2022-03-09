@@ -1,6 +1,7 @@
 FROM registry.access.redhat.com/ubi8/python-39
 
 USER 0
+COPY ./assets/fonts /usr/local/share/fonts/
 COPY ./src /stt
 WORKDIR /stt
 ADD sslproxy.crt /etc/pki/ca-trust/source/anchors/local.pem
@@ -21,6 +22,6 @@ RUN update-ca-trust \
     && chown -R 1001:1001 /stt/proc \
     && chown -R 1001:1001 /stt/out \
     && rm -f /etc/pki/ca-trust/source/anchors/local.pem && \
-    && python3 nltk_downloads.py \
+    && python3 -m nltk.downloader all \
     update-ca-trust
 USER 1001
