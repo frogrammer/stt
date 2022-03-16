@@ -53,17 +53,21 @@ def query(task_id: str) -> list:
 
 def create_task(path: str) -> str:
     create_folders()
+    task_id = str(uuid.uuid4())
+    task_path = get_task_path(task_id)
+    if not os.path.exists(task_path):
+        os.mkdir(task_path)
     if Path(path).is_file():
-        task_id = str(uuid.uuid4())
-        task_path = get_task_path(task_id)
-        if not os.path.exists(task_path):
-            os.mkdir(task_path)
         if '.zip' in path:
             shutil.unpack_archive(path, task_path)
         else:
             shutil.move(path, task_path)
-    if Path(path).is_dir():
-        shutil.move(path, task_path)
+    elif Path(path).is_dir():
+        for file in Path(path).rglob('*'):
+            shutil.move(file.absolute(), task_path)
+        os.rmdir(path)
+    else:
+        raise f'error processing path {path}'
     return task_id
 
 def status(task_id: str) -> Status:

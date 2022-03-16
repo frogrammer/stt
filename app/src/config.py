@@ -7,6 +7,7 @@ DEFAULT_CONFIG = {
     'FONT':'Calibri',
     'FONT_SIZE': 32,
     'KEEP_ALIVE': 'http://localhost:5000',
+    'TEXT_ENCODING': 'ISO-8859-1',
     'VERBOSE_STT': False
 }
 
