@@ -52,6 +52,7 @@ def query(task_id: str) -> list:
     return os.listdir(get_task_path(task_id))
 
 def create_task(path: str) -> str:
+    path = str(path)  # ensure not posixpath
     create_folders()
     task_id = str(uuid.uuid4())
     task_path = get_task_path(task_id)

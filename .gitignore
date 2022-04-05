@@ -142,3 +142,4 @@ test.zip
 build.py
 docker-build
 app/assets/data/*
+test_data/*

@@ -21,7 +21,7 @@ RUN update-ca-trust \
     && chown -R 1001:1001 /stt/in \
     && chown -R 1001:1001 /stt/proc \
     && chown -R 1001:1001 /stt/out \
-    && rm -f /etc/pki/ca-trust/source/anchors/local.pem && \
     && python3 -m nltk.downloader all \
-    update-ca-trust
+    && rm -f /etc/pki/ca-trust/source/anchors/local.pem \
+    && update-ca-trust
 USER 1001

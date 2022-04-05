@@ -4,7 +4,7 @@ from pathlib import Path
 import shutil
 import task, process
 
-TEST_VIDEO_DIR = Path(Path(__file__).parent.parent.parent, 'assets', 'data')
+TEST_VIDEO_DIR = Path(Path(__file__).parent.parent.parent.parent, 'test_data')
 
 def test_copydata():
     task.create_folders()
