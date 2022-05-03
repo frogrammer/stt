@@ -39,9 +39,8 @@
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
-
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip install --upgrade pip && pip install -r ./app/src/requirements.txt && python -m nltk.downloader all",
+	"postCreateCommand": "source /home/vscode/.venv/bin/activate && pip install --upgrade pip && pip install -r ./app/src/requirements.txt && python -m spacy download en_core_web_sm && python -m nltk.downloader all",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode",

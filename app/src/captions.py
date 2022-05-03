@@ -7,6 +7,7 @@ import os
 import moviepy.editor as mp
 import nltk
 import pandas as pd
+import spacy
 from moviepy.video.tools.subtitles import SubtitlesClip, TextClip
 
 import config
@@ -60,7 +61,40 @@ def _get_captions(row: dict):
         cumulative_pos += num_words
     return timings
 
-def _get_captions_nlp(row: dict):
+def _get_captions_spacy(row: dict):
+    nlp = spacy.load('en_core_web_sm')  # shoud not require web call as downloaded in build process
+    cumulative_pos = 0
+    timings = []
+    captions = []
+    for s in row['Sentences']:
+        nlp_s = nlp(s)
+        s = s.replace(',', ',\n')
+        num_words = s.count(' ') + 1
+        if num_words <= MAX_LINE_LENGTH:
+            captions.append(s)
+        else:
+            words = s.split(' ')
+            for i in range(0, len(words), IDEAL_LINE_LENGTH):
+                if len(words[i:]) <= MAX_LINE_LENGTH:
+                    captions.append(' '.join(words[i:]))
+                    break
+                else:
+                    captions.append(' '.join(words[i:i + IDEAL_LINE_LENGTH]))
+
+    for c in captions:
+        num_words = c.count(' ') + 1
+        start =  row['Words'][cumulative_pos]['Offset']
+        end = row['Words'][cumulative_pos + num_words - 1]['Offset'] + \
+            row['Words'][cumulative_pos + num_words - 1]['Duration']
+        timings.append({
+            "Caption": c,
+            "Start": start / 10000000,
+            "End": (end  / 10000000) + SUBTITLE_BUFFER_S
+        })
+        cumulative_pos += num_words
+    return timings
+
+def _get_captions_nltk(row: dict):
     try:
         cumulative_pos = 0
         timings = []
@@ -124,7 +158,8 @@ def _get_captions_nlp(row: dict):
 
 CAPTIONING = {
     'BASIC': _get_captions,
-    'NLP': _get_captions_nlp
+    'NLTK': _get_captions_nltk,
+    'SPACY': _get_captions_spacy
 }
 
 def write_srt(stt_path: str, out_srt_path: str):

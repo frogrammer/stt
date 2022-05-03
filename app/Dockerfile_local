@@ -17,4 +17,5 @@ RUN python -m venv ~/.venv \
     && mkdir -p /stt/proc \
     && mkdir -p /stt/out \
     && python3 -m nltk.downloader all \
+    && python3 -m spacy download en_core_web_trf \
     && fc-cache /usr/local/share/fonts/

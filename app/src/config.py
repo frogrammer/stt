@@ -1,7 +1,7 @@
 import os
 
 DEFAULT_CONFIG = {
-    'CAPTIONING': 'NLP',
+    'CAPTIONING': 'SPACY',
     'HOST':'ws://localhost:5000',
     'ENDPOINT':'ws://172.17.0.1:5000/speech/recognition/dictation/cognitiveservices/v1?initialSilenceTimeoutMs=60000',
     'FONT':'Calibri',

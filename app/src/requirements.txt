@@ -1,9 +1,11 @@
 azure-cognitiveservices-speech
 ffmpeg
 gunicorn
+ipykernel
 moviepy
 nltk
 pandas
 pytest
 requests
 setuptools
+spacy

@@ -22,6 +22,7 @@ RUN update-ca-trust \
     && chown -R 1001:1001 /stt/proc \
     && chown -R 1001:1001 /stt/out \
     && python3 -m nltk.downloader all \
+    && python3 -m spacy download en_core_web_trf \
     && rm -f /etc/pki/ca-trust/source/anchors/local.pem \
     && update-ca-trust
 USER 1001
